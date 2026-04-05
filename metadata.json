@@ -1,0 +1,7 @@
+{
+  "name": "TSC SLEEPAUDIT AI",
+  "description": "Top Notch Q Auditor: High-precision AI-powered call audit platform for The Sleep Company Sales Team. Performs sentiment-aware audits on executive call recordings.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
