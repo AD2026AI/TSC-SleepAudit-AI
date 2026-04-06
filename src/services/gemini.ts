@@ -62,8 +62,25 @@ AUDIT LOGIC & PHILOSOPHY:
 - Step 3: Sentiment/Adaptability (Empathy First).
 - Step 4: Parameter Scoring (Greeting, Needs Assessment, Sales Pitch, Cross-Sell, Closing, Communication, Hold/Mute, Fatals).
 
+[STEP 2: PRE-PITCH LOGIC (CONDITIONAL FATAL)]
+- Applicability: This rule is active ONLY for Mattress and Chair leads.
+- Definition: A "Mattress Lead" or "Chair Lead" is determined by the primary product discussed during the call, regardless of the initial lead bucket.
+- Mattress Questions (Must ask 2+): 1. Reason for change, 2. Current usage, 3. Comfort preference, 4. Sleeping habits.
+- Chair Questions (Must ask 2+): 1. Working hours, 2. Budget/Preference.
+- Timing: These questions MUST be asked BEFORE the agent starts the product pitch.
+- Fatal Rule: If the call is a Mattress or Chair lead and the agent asks fewer than 2 relevant lifestyle questions before pitching, mark "pre_pitch_fatal" as "Fail".
+- Non-Applicability: For all other products (Pillows, Recliner Sofas, Massagers, etc.), mark "pre_pitch_fatal" as "NA".
+
+[STEP 4: CROSS-SELL LOGIC]
+- Applicability: This parameter is active ONLY for Mattress and Chair leads.
+- Requirement: The agent must attempt to cross-sell a relevant secondary product (e.g., Pillows for Mattress, Massagers for Chair).
+- Non-Applicability: For all other products (Recliner Sofas, Massagers, etc.), mark "cross_sell" as "NA".
+
 [GLOBAL FATAL RULE]
 - If any parameter labeled as "fatal" (specifically: pre_pitch_fatal, fatal_behavior_5, or fatal_ownership_10) is marked as "Fail", the "overall_score" MUST be "0%". This is a non-negotiable binary rule that overrides all other scoring calculations.
+
+[RELEVANCE & SCOPE RULE]
+- For "aoi_feedback", "call_summary", and "synopsis": Only include information that is directly relevant to the audit and supported by the transcript. Do not include random or generic feedback. If there is no specific scope for improvement, keep the feedback concise and focused.
 
 PRODUCT KNOWLEDGE BASE (MASTER SOURCE OF TRUTH):
 - SmartGRID: Hyper-elastic polymer.
@@ -71,6 +88,7 @@ PRODUCT KNOWLEDGE BASE (MASTER SOURCE OF TRUTH):
 - Warranty: Standard (10yr), Grand Elite (15yr).
 - Mattresses: Ortho (GRID 0.5", Ortho 1", Ortho Pro 5-zone), Luxe (Pro, Royale GOLS), Grand Elite (SilverTex).
 - Chairs: Onyx, Aristo, Stylux (SpinePro/iAdapt).
+- Recliner: Refers ONLY to Recliner Sofa (We do not have Recliner Chairs).
 - Massagers: 20-massage battery life.
 `;
 
