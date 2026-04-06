@@ -27,24 +27,48 @@ export default function App() {
   const [loadingMessage, setLoadingMessage] = useState("Initializing Auditor...");
   const [history, setHistory] = useState<AuditRecord[]>([]);
   const [showClearHistoryConfirm, setShowClearHistoryConfirm] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(true);
+  const [restoreTimestamp, setRestoreTimestamp] = useState<string | null>(null);
+  const [restoreError, setRestoreError] = useState(false);
 
   // Load history from localStorage
   useEffect(() => {
-    const savedHistory = localStorage.getItem('audit_history');
-    if (savedHistory) {
-      try {
-        const parsed = JSON.parse(savedHistory);
-        if (Array.isArray(parsed)) {
-          setHistory(parsed);
-          // AUTO-LOAD ON START: If there is a previous audit, display the most recent one
-          if (parsed.length > 0 && !auditResult) {
-            setAuditResult(parsed[0].result);
+    const restoreData = async () => {
+      setIsRestoring(true);
+      setRestoreError(false);
+      
+      // 2. THE "LOADING TIMER" EFFECT: Wait for 1.5 seconds
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const savedHistory = localStorage.getItem('audit_history');
+      if (savedHistory) {
+        try {
+          const parsed = JSON.parse(savedHistory);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setHistory(parsed);
+            // AUTO-LOAD ON START: If there is a previous audit, display the most recent one
+            if (!auditResult) {
+              setAuditResult(parsed[0].result);
+            }
+            // 1. THE "LAST UPDATED" TIMESTAMP: Set success time
+            const now = new Date();
+            setRestoreTimestamp(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+          } else {
+            // 3. ERROR ALERT: Mark as empty
+            setRestoreError(true);
           }
+        } catch (e) {
+          console.error("Failed to parse history", e);
+          setRestoreError(true);
         }
-      } catch (e) {
-        console.error("Failed to parse history", e);
+      } else {
+        // 3. ERROR ALERT: Mark as empty
+        setRestoreError(true);
       }
-    }
+      setIsRestoring(false);
+    };
+
+    restoreData();
   }, []);
 
   // Save history to localStorage whenever it changes
@@ -267,7 +291,53 @@ export default function App() {
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">System Active</span>
             </div>
           </div>
+
+          <div className="flex items-center gap-4">
+            {restoreTimestamp && (
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-100 rounded-xl"
+              >
+                <ShieldCheck className="w-4 h-4 text-green-600" />
+                <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">
+                  ✅ Audit Data Restored: {restoreTimestamp}
+                </span>
+              </motion.div>
+            )}
+            {restoreError && !isRestoring && (
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-100 rounded-xl"
+              >
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <span className="text-[10px] font-black text-red-700 uppercase tracking-widest">
+                  ⚠️ Warning: No saved audit found. Please upload a recording.
+                </span>
+              </motion.div>
+            )}
+          </div>
         </header>
+
+        {/* Loading Overlay for Restore */}
+        <AnimatePresence>
+          {isRestoring && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-white/80 backdrop-blur-sm z-[100] flex flex-col items-center justify-center"
+            >
+              <div className="relative mb-6">
+                <div className="w-16 h-16 border-4 border-indigo-100 rounded-full"></div>
+                <div className="w-16 h-16 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin absolute top-0 left-0"></div>
+              </div>
+              <h3 className="text-xl font-black text-slate-800 mb-1">Verifying Audit Alignment...</h3>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Checking Local Database</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Content Container */}
         <div className="max-w-6xl mx-auto px-8 pt-12">

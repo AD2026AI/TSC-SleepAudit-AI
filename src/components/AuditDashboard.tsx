@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, XCircle, AlertCircle, User, Phone, Globe, Award, MessageSquare, Activity, X, Info, Power, CheckCircle, TrendingUp, Brain, Target, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, User, Phone, Globe, Award, MessageSquare, Activity, X, Info, Power, CheckCircle, TrendingUp, Brain, Target, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface GradingItem {
@@ -8,6 +8,11 @@ interface GradingItem {
 }
 
 interface AuditData {
+  transcription_status?: {
+    is_100_percent_complete: boolean;
+    total_seconds_transcribed: string;
+    verification_statement: string;
+  };
   audit_summary: {
     agent_name: string;
     team_type: string;
@@ -164,6 +169,27 @@ export const AuditDashboard: React.FC<Props> = ({ data }) => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Transcription Status Check */}
+      {data.transcription_status && (
+        <div className={`p-4 rounded-2xl border flex items-center justify-between ${
+          data.transcription_status.is_100_percent_complete 
+            ? 'bg-green-50 border-green-100 text-green-700' 
+            : 'bg-red-50 border-red-100 text-red-700'
+        }`}>
+          <div className="flex items-center gap-3">
+            <ShieldCheck className={`w-5 h-5 ${data.transcription_status.is_100_percent_complete ? 'text-green-600' : 'text-red-600'}`} />
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest">Transcription Integrity Check</p>
+              <p className="text-xs font-bold">{data.transcription_status.verification_statement}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Duration Verified</p>
+            <p className="text-xs font-black">{data.transcription_status.total_seconds_transcribed}</p>
+          </div>
+        </div>
+      )}
 
       {/* File Info Section - Brand Aligned */}
       {data.metadata && (

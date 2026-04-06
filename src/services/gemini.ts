@@ -14,6 +14,8 @@ export const analyzeCall = async (audioBase64: string, mimeType: string): Promis
 [CRITICAL P0 SYSTEM MANDATE: 100% VERBATIM TRANSCRIPTION]
 Before performing any audit, analysis, or JSON generation, you MUST execute a 100% complete, end-to-end transcription of the provided audio file. This is a Zero-Tolerance Priority (P0).
 
+INTERNAL STEP 1: VERBATIM TRANSCRIPTION. This is the foundation. You must analytically listen to the entire duration. Do not summarize. Do not skip. If the audio is 10 minutes long, the transcript must reflect 10 minutes of dialogue. You are strictly forbidden from generating a single audit score or filling the JSON grading sheet until you have transcribed every single second of the audio. If the transcript is not 100% complete from the first 'Hello' to the final 'Goodbye', the Audit Score must return an Error.
+
 Phase 1: Audio Processing & Verbatim Transcription
 - Audio Isolation: Isolate human speech frequencies. Extract every possible word.
 - Zero-Truncation Rule: Transcribe from the first second to the last. No summarizing.
@@ -72,9 +74,8 @@ AUDIT LOGIC & PHILOSOPHY:
 - Non-Applicability: For all other products (Pillows, Recliner Sofas, Massagers, etc.), mark "pre_pitch_fatal" as "NA".
 
 [STEP 4: CROSS-SELL LOGIC]
-- Applicability: This parameter is active ONLY for Mattress and Chair leads.
+- Applicability: This parameter is relevant ONLY for Mattress and Chair leads. For 'Recliner Sofa' and other products, ensure 'cross_sell' is explicitly marked as 'NA'.
 - Requirement: The agent must attempt to cross-sell a relevant secondary product (e.g., Pillows for Mattress, Massagers for Chair).
-- Non-Applicability: For all other products (Recliner Sofas, Massagers, etc.), mark "cross_sell" as "NA".
 
 [GLOBAL FATAL RULE]
 - If any parameter labeled as "fatal" (specifically: pre_pitch_fatal, fatal_behavior_5, or fatal_ownership_10) is marked as "Fail", the "overall_score" MUST be "0%". This is a non-negotiable binary rule that overrides all other scoring calculations.
@@ -89,7 +90,7 @@ AUDIT LOGIC & PHILOSOPHY:
 
 [GRADING EVIDENCE RULE]
 - For every parameter in the "grading_sheet", if the "status" is "Fail", the "reason" field MUST include a verbatim quote from the transcript that serves as direct evidence for the failure.
-- If no direct evidence exists for a failure (e.g., a missing required question), use the phrase "NONE FOUND" within the explanation.
+- If a failure is due to a missing required element (like specific questions), the "transcript_evidence" field should state "NONE FOUND" while the "reason" field should explain the absence.
 - The "transcript_evidence" field must ALWAYS contain the verbatim quote used for scoring, regardless of status.
 
 PRODUCT KNOWLEDGE BASE (MASTER SOURCE OF TRUTH):
@@ -134,6 +135,15 @@ PRODUCT KNOWLEDGE BASE (MASTER SOURCE OF TRUTH):
       responseSchema: {
         type: Type.OBJECT,
         properties: {
+          transcription_status: {
+            type: Type.OBJECT,
+            properties: {
+              is_100_percent_complete: { type: Type.BOOLEAN },
+              total_seconds_transcribed: { type: Type.STRING, description: "Estimate based on audio duration" },
+              verification_statement: { type: Type.STRING, description: "I certify that I have listened to the end of the audio before scoring." }
+            },
+            required: ["is_100_percent_complete", "total_seconds_transcribed", "verification_statement"]
+          },
           audit_summary: {
             type: Type.OBJECT,
             properties: {

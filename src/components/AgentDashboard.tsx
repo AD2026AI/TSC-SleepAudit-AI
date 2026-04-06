@@ -243,7 +243,26 @@ export const AgentDashboard: React.FC<Props> = ({ history, onViewAudit, onClearH
       "Closing Score", "Closing Feedback",
       "Communication Score", "Communication Feedback",
       "Hold/Mute Score", "Hold/Mute Feedback",
-      "Overall Quality Score (%)", "Fatal Error Reasons"
+      "Overall Quality Score (%)", "Fatal Error Reasons",
+      "Call Summary",
+      "Areas of Improvement (AOI)",
+      "Primary Pain Point",
+      "Quality of Lead",
+      "Customer Engagement Score",
+      "Timeline to Purchase",
+      "Competitors Mentioned",
+      "Price Sensitivity",
+      "Pincode Provided",
+      "Decision Maker",
+      "Call Ending Type",
+      "Store Visit Scope",
+      "Store Visit Insight",
+      "Closure Probability",
+      "Closure Sentiment",
+      "Interest Factor",
+      "Buying Signals",
+      "Closure Blockers",
+      "Closure Synopsis"
     ];
 
     const rows = filteredHistory.map(record => {
@@ -251,6 +270,8 @@ export const AgentDashboard: React.FC<Props> = ({ history, onViewAudit, onClearH
       const summary = res.audit_summary || {};
       const grading = res.grading_sheet || {};
       const identifiers = res.key_identifiers || {};
+      const closure = identifiers.closure_prediction || {};
+      const aoi = res.aoi_feedback || [];
 
       return [
         record.date,
@@ -277,7 +298,26 @@ export const AgentDashboard: React.FC<Props> = ({ history, onViewAudit, onClearH
         grading.hold_mute_5?.score || grading.hold_mute_5?.status,
         grading.hold_mute_5?.reason,
         summary.overall_score,
-        summary.fatal_error_reason || ""
+        summary.fatal_error_reason || "",
+        summary.call_summary,
+        aoi.join(" | "),
+        identifiers.primary_pain_point,
+        identifiers.quality_of_lead,
+        identifiers.customer_engagement_score,
+        identifiers.timeline_to_purchase,
+        (identifiers.competitors_mentioned || []).join(", "),
+        identifiers.price_sensitivity,
+        identifiers.pincode_provided,
+        identifiers.decision_maker,
+        identifiers.call_ending_type,
+        identifiers.store_visit_scope,
+        identifiers.store_visit_insight,
+        closure.probability,
+        closure.sentiment,
+        closure.interest_factor,
+        (closure.buying_signals || []).join(", "),
+        (closure.closure_blockers || []).join(", "),
+        closure.synopsis
       ].map(val => `"${String(val || "").replace(/"/g, '""')}"`).join(",");
     });
 
