@@ -36,19 +36,22 @@ export default function App() {
         const parsed = JSON.parse(savedHistory);
         if (Array.isArray(parsed)) {
           setHistory(parsed);
-        } else {
-          setHistory([]);
+          // AUTO-LOAD ON START: If there is a previous audit, display the most recent one
+          if (parsed.length > 0 && !auditResult) {
+            setAuditResult(parsed[0].result);
+          }
         }
       } catch (e) {
         console.error("Failed to parse history", e);
-        setHistory([]);
       }
     }
   }, []);
 
-  // Save history to localStorage
+  // Save history to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('audit_history', JSON.stringify(history));
+    if (history.length > 0) {
+      localStorage.setItem('audit_history', JSON.stringify(history));
+    }
   }, [history]);
 
   const loadingMessages = [
@@ -194,7 +197,13 @@ export default function App() {
             time,
             result: enrichedResult
           };
-          setHistory(prev => [newRecord, ...prev]);
+          
+          // AUDIT HISTORY LOG: Add new audit to the history list array
+          const updatedHistory = [newRecord, ...history];
+          setHistory(updatedHistory);
+          
+          // AUTO-SAVE FEATURE: Immediately save to browser's permanent memory
+          localStorage.setItem('audit_history', JSON.stringify(updatedHistory));
 
         } catch (err: any) {
           setError(err.message || "Failed to analyze the call. Please try again.");
@@ -212,8 +221,11 @@ export default function App() {
     setHistory(prev => prev.filter(r => r.id !== id));
   };
 
-  const clearHistory = () => {
+  const clearAuditHistory = () => {
+    // "CLEAR ALL" BUTTON: Clear the history list and the browser's memory
     setHistory([]);
+    setAuditResult(null);
+    localStorage.removeItem('audit_history');
     setShowClearHistoryConfirm(false);
   };
 
@@ -347,7 +359,7 @@ export default function App() {
                       <div className="flex items-center gap-2 bg-red-50 p-2 rounded-2xl border border-red-100 shadow-sm">
                         <span className="text-[10px] font-black uppercase tracking-widest text-red-600 px-2">Are you sure?</span>
                         <button 
-                          onClick={clearHistory}
+                          onClick={clearAuditHistory}
                           className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-xl font-bold text-xs transition-all"
                         >
                           Yes, Clear
@@ -448,7 +460,7 @@ export default function App() {
                     setAuditResult(audit);
                     setView('audit');
                   }} 
-                  onClearHistory={clearHistory}
+                  onClearHistory={clearAuditHistory}
                 />
               </motion.div>
             )}

@@ -80,7 +80,17 @@ AUDIT LOGIC & PHILOSOPHY:
 - If any parameter labeled as "fatal" (specifically: pre_pitch_fatal, fatal_behavior_5, or fatal_ownership_10) is marked as "Fail", the "overall_score" MUST be "0%". This is a non-negotiable binary rule that overrides all other scoring calculations.
 
 [RELEVANCE & SCOPE RULE]
-- For "aoi_feedback", "call_summary", and "synopsis": Only include information that is directly relevant to the audit and supported by the transcript. Do not include random or generic feedback. If there is no specific scope for improvement, keep the feedback concise and focused.
+- For "aoi_feedback": Each feedback item MUST be specific, detailed, and directly supported by transcript evidence. Provide actionable insights for improvement rather than generic advice.
+- For "call_summary" and "synopsis": These MUST be elaborate, detailed, and narrative. Do not be overly concise. Provide a clear picture of the call's progression, specific customer needs, and the agent's handling of the interaction.
+
+[CALL SUMMARY & SYNOPSIS PROTOCOL]
+- Call Summary: Provide a comprehensive 8-12 sentence narrative. This must be a deep-dive into the call. Detail the opening (brand mention/greeting), the specific discovery questions asked (lifestyle, pain points), the exact product models pitched (e.g., Ortho Pro, Luxe Royale), specific SmartGRID benefits mentioned, the customer's exact objections (price, trial, spouse), how the agent handled each objection, and the step-by-step progression to the final conclusion.
+- Synopsis: Provide a 4-6 sentence elaborate explanation of the closure prediction. Detail the specific verbal cues, buying signals (e.g., asking about delivery, warranty), or blockers (e.g., hesitation on price, competitor comparison) that led to the probability score.
+
+[GRADING EVIDENCE RULE]
+- For every parameter in the "grading_sheet", if the "status" is "Fail", the "reason" field MUST include a verbatim quote from the transcript that serves as direct evidence for the failure.
+- If no direct evidence exists for a failure (e.g., a missing required question), use the phrase "NONE FOUND" within the explanation.
+- The "transcript_evidence" field must ALWAYS contain the verbatim quote used for scoring, regardless of status.
 
 PRODUCT KNOWLEDGE BASE (MASTER SOURCE OF TRUTH):
 - SmartGRID: Hyper-elastic polymer.
@@ -106,7 +116,7 @@ PRODUCT KNOWLEDGE BASE (MASTER SOURCE OF TRUTH):
     properties: {
       transcript_evidence: { type: Type.STRING, description: "Verbatim quote from transcript or 'NONE FOUND'" },
       status: { type: Type.STRING, description: "Pass/Fail/NA" },
-      reason: { type: Type.STRING, description: "Strict evidence-based explanation" }
+      reason: { type: Type.STRING, description: "Strict evidence-based explanation. If status is 'Fail', MUST include a verbatim quote as evidence or 'NONE FOUND' if applicable." }
     },
     required: ["transcript_evidence", "status", "reason"]
   };
@@ -131,7 +141,7 @@ PRODUCT KNOWLEDGE BASE (MASTER SOURCE OF TRUTH):
               team_type: { type: Type.STRING },
               language: { type: Type.STRING },
               overall_score: { type: Type.STRING },
-              call_summary: { type: Type.STRING }
+              call_summary: { type: Type.STRING, description: "Comprehensive 8-12 sentence deep-dive narrative of the entire call flow, detailing discovery, specific models pitched, objection handling, and progression." }
             },
             required: ["agent_name", "team_type", "language", "overall_score", "call_summary"]
           },
@@ -158,7 +168,7 @@ PRODUCT KNOWLEDGE BASE (MASTER SOURCE OF TRUTH):
                   interest_factor: { type: Type.STRING },
                   buying_signals: { type: Type.ARRAY, items: { type: Type.STRING } },
                   closure_blockers: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  synopsis: { type: Type.STRING }
+                  synopsis: { type: Type.STRING, description: "Elaborate 4-6 sentence explanation of the closure prediction, detailing specific verbal cues, buying signals, and blockers." }
                 },
                 required: ["probability", "sentiment", "interest_factor", "buying_signals", "closure_blockers", "synopsis"]
               }
@@ -181,7 +191,11 @@ PRODUCT KNOWLEDGE BASE (MASTER SOURCE OF TRUTH):
             },
             required: ["greeting_5", "pre_pitch_fatal", "needs_assessment_20", "sales_pitch_20", "cross_sell", "closing_15", "communication_10", "hold_mute_5", "fatal_behavior_5", "fatal_ownership_10"]
           },
-          aoi_feedback: { type: Type.ARRAY, items: { type: Type.STRING } },
+          aoi_feedback: { 
+            type: Type.ARRAY, 
+            items: { type: Type.STRING },
+            description: "List of specific, actionable feedback items supported by transcript evidence."
+          },
           transcript: {
             type: Type.ARRAY,
             items: {
